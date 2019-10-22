@@ -27,7 +27,9 @@ namespace Weikio.ApiFramework.Plugins.Odbc.Schema
         private void RequireConnection()
         {
             if (_connection == null)
+            {
                 throw new InvalidOperationException("SchemaReader is not connected to a database.");
+            }
         }
 
         public IList<Table> GetSchemaFor(SqlCommands sqlCommands)
@@ -36,27 +38,38 @@ namespace Weikio.ApiFramework.Plugins.Odbc.Schema
 
             var schema = new List<Table>();
 
-            if (sqlCommands?.Any() == false) return schema;
+            if (sqlCommands?.Any() != true)
+            {
+                return schema;
+            }
 
             foreach (var sqlCommand in sqlCommands)
+            {
                 using (var odbcCommand = _connection.CreateCommand())
                 {
                     odbcCommand.CommandText = sqlCommand.Value.CommandText;
 
                     if (sqlCommand.Value.Parameters != null)
+                    {
                         foreach (var parameter in sqlCommand.Value.Parameters)
                         {
                             var parameterType = Type.GetType(parameter.Type);
 
                             object parameterValue = null;
-                            if (parameterType.IsValueType) parameterValue = Activator.CreateInstance(parameterType);
+
+                            if (parameterType.IsValueType)
+                            {
+                                parameterValue = Activator.CreateInstance(parameterType);
+                            }
 
                             odbcCommand.Parameters.AddWithValue(parameter.Name, parameterValue);
                         }
+                    }
 
                     var columns = GetColumns(odbcCommand);
                     schema.Add(new Table($"{sqlCommand.Key}", "", columns, sqlCommand.Value));
                 }
+            }
 
             return schema;
         }
@@ -71,13 +84,19 @@ namespace Weikio.ApiFramework.Plugins.Odbc.Schema
 
             foreach (DataRow schemaTable in schemaTables.Rows)
             {
-                if (schemaTable["TABLE_TYPE"].ToString() != "TABLE") continue;
+                if (schemaTable["TABLE_TYPE"].ToString() != "TABLE")
+                {
+                    continue;
+                }
 
                 var tableQualifier = schemaTable["TABLE_QUALIFIER"].ToString();
                 var tableName = schemaTable["TABLE_NAME"].ToString();
                 var tableNameWithQualifier = $"{tableQualifier}.{tableName}";
 
-                if (!_options.Includes(tableName)) continue;
+                if (!_options.Includes(tableName))
+                {
+                    continue;
+                }
 
                 using (var command = _connection.CreateCommand())
                 {
@@ -99,6 +118,7 @@ namespace Weikio.ApiFramework.Plugins.Odbc.Schema
                 using (var dtSchema = reader.GetSchemaTable())
                 {
                     if (dtSchema != null)
+                    {
                         foreach (DataRow schemaColumn in dtSchema.Rows)
                         {
                             var columnName = Convert.ToString(schemaColumn["ColumnName"]);
@@ -107,6 +127,7 @@ namespace Weikio.ApiFramework.Plugins.Odbc.Schema
 
                             columns.Add(new Column(columnName, dataType, isNullable));
                         }
+                    }
                 }
             }
 
@@ -122,11 +143,13 @@ namespace Weikio.ApiFramework.Plugins.Odbc.Schema
             if (!disposedValue)
             {
                 if (disposing)
+                {
                     if (_connection != null)
                     {
                         _connection.Dispose();
                         _connection = null;
                     }
+                }
 
                 disposedValue = true;
             }
