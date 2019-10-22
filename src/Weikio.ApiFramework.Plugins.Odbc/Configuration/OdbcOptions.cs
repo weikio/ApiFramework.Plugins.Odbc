@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Linq;
 
-namespace ApiFramework.Plugins.Odbc.Configuration
+namespace Weikio.ApiFramework.Plugins.Odbc.Configuration
 {
     public class OdbcOptions
     {

@@ -1,6 +1,6 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ApiFramework.Plugins.Odbc", "ApiFramework.Plugins.Odbc\ApiFramework.Plugins.Odbc.csproj", "{A4958927-3728-4FB5-98A5-BAE8AE5714D7}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Weikio.ApiFramework.Plugins.Odbc", "Weikio.ApiFramework.Plugins.Odbc\Weikio.ApiFramework.Plugins.Odbc.csproj", "{A4958927-3728-4FB5-98A5-BAE8AE5714D7}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

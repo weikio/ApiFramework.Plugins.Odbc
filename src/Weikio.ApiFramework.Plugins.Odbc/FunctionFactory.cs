@@ -1,11 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using ApiFramework.Plugins.Odbc.CodeGeneration;
-using ApiFramework.Plugins.Odbc.Configuration;
-using ApiFramework.Plugins.Odbc.Schema;
+using Weikio.ApiFramework.Plugins.Odbc.CodeGeneration;
+using Weikio.ApiFramework.Plugins.Odbc.Configuration;
+using Weikio.ApiFramework.Plugins.Odbc.Schema;
 
-namespace ApiFramework.Plugins.Odbc
+namespace Weikio.ApiFramework.Plugins.Odbc
 {
     public static class FunctionFactory
     {

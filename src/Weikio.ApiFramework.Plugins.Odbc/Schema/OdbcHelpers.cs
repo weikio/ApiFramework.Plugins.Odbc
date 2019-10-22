@@ -2,7 +2,7 @@
 using System.Data.Odbc;
 using System.Linq;
 
-namespace ApiFramework.Plugins.Odbc.Schema
+namespace Weikio.ApiFramework.Plugins.Odbc.Schema
 {
     public static class OdbcHelpers
     {

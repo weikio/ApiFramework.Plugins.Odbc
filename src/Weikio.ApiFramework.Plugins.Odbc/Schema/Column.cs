@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace ApiFramework.Plugins.Odbc.Schema
+namespace Weikio.ApiFramework.Plugins.Odbc.Schema
 {
     public class Column
     {

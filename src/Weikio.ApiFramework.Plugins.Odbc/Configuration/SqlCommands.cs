@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.IO;
 
-namespace ApiFramework.Plugins.Odbc.Configuration
+namespace Weikio.ApiFramework.Plugins.Odbc.Configuration
 {
     public class SqlCommands : Dictionary<string, SqlCommand>
     {

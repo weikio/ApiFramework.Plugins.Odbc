@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
-using ApiFramework.Plugins.Odbc.Configuration;
+using Weikio.ApiFramework.Plugins.Odbc.Configuration;
 
-namespace ApiFramework.Plugins.Odbc.Schema
+namespace Weikio.ApiFramework.Plugins.Odbc.Schema
 {
     public class Table
     {

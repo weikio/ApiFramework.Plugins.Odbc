@@ -4,13 +4,13 @@ using System.Data;
 using System.Data.Odbc;
 using System.Linq;
 using System.Reflection;
-using ApiFramework.Plugins.Odbc.Configuration;
-using ApiFramework.Plugins.Odbc.Schema;
 using LamarCodeGeneration;
 using LamarCompiler;
 using Microsoft.CodeAnalysis.CSharp;
+using Weikio.ApiFramework.Plugins.Odbc.Configuration;
+using Weikio.ApiFramework.Plugins.Odbc.Schema;
 
-namespace ApiFramework.Plugins.Odbc.CodeGeneration
+namespace Weikio.ApiFramework.Plugins.Odbc.CodeGeneration
 {
     public class CodeGenerator
     {
