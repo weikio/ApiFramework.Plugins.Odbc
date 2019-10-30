@@ -15,9 +15,9 @@ namespace Weikio.ApiFramework.Plugins.Odbc.CodeGeneration
         public Assembly GenerateAssembly(IList<Table> schema, OdbcOptions odbcOptions)
         {
             var generator = new AssemblyGenerator();
-            generator.ReferenceAssembly(typeof(Console).Assembly);
-            generator.ReferenceAssembly(typeof(DataRow).Assembly);
-            generator.ReferenceAssembly(typeof(OdbcCommand).Assembly);
+            generator.ReferenceAssembly(typeof(System.Console).Assembly);
+            generator.ReferenceAssembly(typeof(System.Data.DataRow).Assembly);
+            generator.ReferenceAssembly(typeof(System.Data.Odbc.OdbcCommand).Assembly);
             generator.ReferenceAssembly(typeof(OdbcHelpers).Assembly);
 
             var assemblyCode = GenerateCode(schema, odbcOptions);
