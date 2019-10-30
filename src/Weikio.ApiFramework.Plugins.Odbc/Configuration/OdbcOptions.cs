@@ -11,7 +11,7 @@ namespace Weikio.ApiFramework.Plugins.Odbc.Configuration
 
         public bool Includes(string tableName)
         {
-            if (Tables?.Any() == false)
+            if (Tables?.Any() != true)
             {
                 return true;
             }
