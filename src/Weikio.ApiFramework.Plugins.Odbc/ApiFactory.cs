@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using Weikio.ApiFramework.Plugins.Odbc.CodeGeneration;
 using Weikio.ApiFramework.Plugins.Odbc.Configuration;
 using Weikio.ApiFramework.Plugins.Odbc.Schema;
@@ -9,7 +10,7 @@ namespace Weikio.ApiFramework.Plugins.Odbc
 {
     public static class ApiFactory
     {
-        public static IList<Type> Create(OdbcOptions odbcOptions, SqlCommands sqlCommands = null)
+        public static Task<IEnumerable<Type>> Create(OdbcOptions odbcOptions, SqlCommands sqlCommands = null)
         {
             var schema = new List<Table>();
 
@@ -31,9 +32,11 @@ namespace Weikio.ApiFramework.Plugins.Odbc
             var generator = new CodeGenerator();
             var assembly = generator.GenerateAssembly(schema, odbcOptions);
 
-            return assembly.GetExportedTypes()
+            var result = assembly.GetExportedTypes()
                 .Where(x => x.Name.EndsWith("Api"))
                 .ToList();
+
+            return Task.FromResult<IEnumerable<Type>>(result);
         }
     }
 }
