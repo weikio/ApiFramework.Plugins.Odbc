@@ -20,12 +20,14 @@ namespace Weikio.ApiFramework.Plugins.Odbc
 
                 if (sqlCommands != null)
                 {
-                    schema.AddRange(schemaReader.GetSchemaFor(sqlCommands));
+                    var dbCommands = schemaReader.GetSchemaFor(sqlCommands);
+                    schema.AddRange(dbCommands);
                 }
 
                 if (odbcOptions.ShouldGenerateApisForTables())
                 {
-                    schema.AddRange(schemaReader.ReadSchemaFromDatabaseTables());
+                    var dbTables = schemaReader.ReadSchemaFromDatabaseTables();
+                    schema.AddRange(dbTables);
                 }
             }
 
