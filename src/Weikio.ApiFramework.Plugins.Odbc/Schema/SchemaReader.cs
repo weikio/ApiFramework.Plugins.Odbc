@@ -48,7 +48,8 @@ namespace Weikio.ApiFramework.Plugins.Odbc.Schema
                 using (var odbcCommand = _connection.CreateCommand())
                 {
                     odbcCommand.CommandText = sqlCommand.Value.CommandText;
-
+                    odbcCommand.CommandTimeout = (int) TimeSpan.FromMinutes(5).TotalSeconds;
+                    
                     if (sqlCommand.Value.Parameters != null)
                     {
                         foreach (var parameter in sqlCommand.Value.Parameters)
@@ -111,6 +112,8 @@ namespace Weikio.ApiFramework.Plugins.Odbc.Schema
                 using (var command = _connection.CreateCommand())
                 {
                     command.CommandText = $"select * from {tableNameWithQualifier}";
+                    command.CommandTimeout = (int) TimeSpan.FromMinutes(5).TotalSeconds;
+                    
                     var columns = GetColumns(command);
                     schema.Add(new Table(tableName, tableQualifier, columns));
                 }
