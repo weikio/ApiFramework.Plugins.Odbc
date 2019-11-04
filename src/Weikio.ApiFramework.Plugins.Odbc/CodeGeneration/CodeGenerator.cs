@@ -22,7 +22,18 @@ namespace Weikio.ApiFramework.Plugins.Odbc.CodeGeneration
 
             var assemblyCode = GenerateCode(schema, odbcOptions);
 
-            return generator.Generate(assemblyCode);
+            try
+            {
+                var result = generator.Generate(assemblyCode);
+
+                return result;
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e);
+
+                throw;
+            }
         }
 
         public string GenerateCode(IList<Table> schema, OdbcOptions odbcOptions)
@@ -36,6 +47,8 @@ namespace Weikio.ApiFramework.Plugins.Odbc.CodeGeneration
                 source.UsingNamespace("System.Reflection");
                 source.UsingNamespace("System.Linq");
                 source.UsingNamespace("System.Diagnostics");
+                source.UsingNamespace("Weikio.ApiFramework.Plugins.Odbc.Configuration");
+                source.UsingNamespace("Weikio.ApiFramework.Plugins.Odbc.Schema");
                 source.WriteLine("");
 
                 foreach (var table in schema)

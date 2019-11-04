@@ -89,9 +89,19 @@ namespace Weikio.ApiFramework.Plugins.Odbc.Schema
                     continue;
                 }
 
-                var tableQualifier = schemaTable["TABLE_QUALIFIER"].ToString();
+                var tableQualifier = "";
+
+                if (schemaTable.Table.Columns.Contains("TABLE_QUALIFIER"))
+                {
+                    tableQualifier = schemaTable["TABLE_QUALIFIER"].ToString();    
+                }
+                else if (schemaTable.Table.Columns.Contains("TABLE_SCHEM"))
+                {
+                    tableQualifier = schemaTable["TABLE_SCHEM"].ToString();
+                }
+                
                 var tableName = schemaTable["TABLE_NAME"].ToString();
-                var tableNameWithQualifier = $"{tableQualifier}.{tableName}";
+                var tableNameWithQualifier = string.IsNullOrWhiteSpace(tableQualifier) ? tableName : $"{tableQualifier}.{tableName}";
 
                 if (!_options.Includes(tableName))
                 {

@@ -60,6 +60,8 @@ namespace Weikio.ApiFramework.Plugins.Odbc.CodeGeneration
 
             writer.WriteLine("};");
             writer.WriteLine("");
+            
+            writer.WriteLine("public OdbcOptions Configuration { get; set; }");
 
             if (table.SqlCommand != null)
             {
@@ -166,7 +168,7 @@ namespace Weikio.ApiFramework.Plugins.Odbc.CodeGeneration
             writer.WriteLine("var fields = new List<string>();");
             writer.WriteLine("");
 
-            writer.UsingBlock($"var conn = new OdbcConnection(\"{odbcOptions.ConnectionString}\")", w =>
+            writer.UsingBlock($"var conn = new OdbcConnection(Configuration.ConnectionString)", w =>
             {
                 w.WriteLine("conn.Open();");
 
