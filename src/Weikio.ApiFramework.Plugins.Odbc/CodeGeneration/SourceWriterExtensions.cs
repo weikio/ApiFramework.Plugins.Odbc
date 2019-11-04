@@ -60,7 +60,7 @@ namespace Weikio.ApiFramework.Plugins.Odbc.CodeGeneration
 
             writer.WriteLine("};");
             writer.WriteLine("");
-            
+
             writer.WriteLine("public OdbcOptions Configuration { get; set; }");
 
             if (table.SqlCommand != null)
@@ -219,7 +219,7 @@ namespace Weikio.ApiFramework.Plugins.Odbc.CodeGeneration
                 return table.SqlCommand.DataTypeName;
             }
 
-            return table.Name;
+            return table.Name + "Item";
         }
 
         private static string GetPropertyName(string originalName)
