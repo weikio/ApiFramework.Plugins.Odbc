@@ -13,7 +13,7 @@ namespace Weikio.ApiFramework.Plugins.Odbc.CodeGeneration
         public static void WriteNamespaceBlock(this ISourceWriter writer, Table table,
             Action<ISourceWriter> contentProvider)
         {
-            writer.Namespace(typeof(ApiFactory).Namespace + ".Generated." + table.Name);
+            writer.Namespace(typeof(ApiFactory).Namespace + ".Generated");
 
             contentProvider.Invoke(writer);
 
