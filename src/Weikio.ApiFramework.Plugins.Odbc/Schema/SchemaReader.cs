@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Data.Odbc;
@@ -62,8 +62,15 @@ namespace Weikio.ApiFramework.Plugins.Odbc.Schema
                             {
                                 parameterValue = Activator.CreateInstance(parameterType);
                             }
+                            else if (parameterType.IsArray)
+                            {
+                                if (parameterType.GetElementType().IsValueType)
+                                {
+                                    parameterValue = Activator.CreateInstance(parameterType.GetElementType());
+                                }
+                            }
 
-                            odbcCommand.Parameters.AddWithValue(parameter.Name, parameterValue);
+                            odbcCommand.Parameters.AddWithValue($"@{parameter.Name}", parameterValue);
                         }
                     }
 

@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using LamarCodeGeneration;
@@ -133,8 +133,7 @@ namespace Weikio.ApiFramework.Plugins.Odbc.CodeGeneration
                     {
                         foreach (var sqlCommandParameter in sqlCommand.Parameters)
                         {
-                            cmdBlock.WriteLine(
-                                $"cmd.Parameters.AddWithValue(\"@{sqlCommandParameter.Name}\", {sqlCommandParameter.Name});");
+                            cmdBlock.WriteLine(@$"OdbcHelpers.AddParameter(cmd, ""{sqlCommandParameter.Name}"", {sqlCommandParameter.Name});");
                         }
                     }
 
