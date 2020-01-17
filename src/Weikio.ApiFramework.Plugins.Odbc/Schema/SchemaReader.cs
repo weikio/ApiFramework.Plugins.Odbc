@@ -56,6 +56,11 @@ namespace Weikio.ApiFramework.Plugins.Odbc.Schema
                         {
                             var parameterType = Type.GetType(parameter.Type);
 
+                            if (parameterType == null)
+                            {
+                                throw new ArgumentException($"SQL command '{sqlCommand.Key}' has an invalid type '{parameter.Type}' defined for parameter '{parameter.Name}'.");
+                            }
+
                             object parameterValue = null;
 
                             if (parameterType.IsValueType)
