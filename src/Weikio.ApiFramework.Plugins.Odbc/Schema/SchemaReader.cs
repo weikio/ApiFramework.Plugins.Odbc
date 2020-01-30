@@ -32,19 +32,37 @@ namespace Weikio.ApiFramework.Plugins.Odbc.Schema
             }
         }
 
-        public IList<Table> GetSchemaFor(SqlCommands sqlCommands)
+        public (IList<Table> QueryCommands, SqlCommands NonQueryCommands) GetSchemaFor(SqlCommands sqlCommands)
         {
             RequireConnection();
 
-            var schema = new List<Table>();
+            var queryCommands = new List<Table>();
+            var nonQueryCommands = new SqlCommands();
 
             if (sqlCommands?.Any() != true)
             {
-                return schema;
+                return (queryCommands, nonQueryCommands);
             }
 
             foreach (var sqlCommand in sqlCommands)
             {
+                if (sqlCommand.Value.IsNonQuery())
+                {
+                    if (sqlCommand.Value.IsDelete())
+                    {
+                        throw new NotSupportedException($"DELETE commands are not supported. Command name: '{sqlCommand.Key}'.");
+                    }
+                    else if (sqlCommand.Value.IsUpdate() && !sqlCommand.Value.HasWhereClause())
+                    {
+                        throw new InvalidOperationException("");
+                    }
+                    
+                    nonQueryCommands.Add(sqlCommand.Key, sqlCommand.Value);
+
+                    // don't read schema for INSERT and UPDATE commands
+                    continue;
+                }
+
                 using (var odbcCommand = _connection.CreateCommand())
                 {
                     odbcCommand.CommandText = sqlCommand.Value.CommandText;
@@ -80,11 +98,11 @@ namespace Weikio.ApiFramework.Plugins.Odbc.Schema
                     }
 
                     var columns = GetColumns(odbcCommand);
-                    schema.Add(new Table($"{sqlCommand.Key}", "", columns, sqlCommand.Value));
+                    queryCommands.Add(new Table($"{sqlCommand.Key}", "", columns, sqlCommand.Value));
                 }
             }
 
-            return schema;
+            return (queryCommands, nonQueryCommands);
         }
 
         public IList<Table> ReadSchemaFromDatabaseTables()

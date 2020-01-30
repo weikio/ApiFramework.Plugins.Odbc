@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Data.Odbc;
@@ -12,7 +12,7 @@ namespace Weikio.ApiFramework.Plugins.Odbc.CodeGeneration
 {
     public class CodeGenerator
     {
-        public Assembly GenerateAssembly(IList<Table> schema, OdbcOptions odbcOptions)
+        public Assembly GenerateAssembly(IList<Table> querySchema, SqlCommands nonQueryCommands, OdbcOptions odbcOptions)
         {
             var generator = new AssemblyGenerator();
             generator.ReferenceAssembly(typeof(System.Console).Assembly);
@@ -20,7 +20,7 @@ namespace Weikio.ApiFramework.Plugins.Odbc.CodeGeneration
             generator.ReferenceAssembly(typeof(System.Data.Odbc.OdbcCommand).Assembly);
             generator.ReferenceAssembly(typeof(OdbcHelpers).Assembly);
 
-            var assemblyCode = GenerateCode(schema, odbcOptions);
+            var assemblyCode = GenerateCode(querySchema, nonQueryCommands, odbcOptions);
 
             try
             {
@@ -36,7 +36,7 @@ namespace Weikio.ApiFramework.Plugins.Odbc.CodeGeneration
             }
         }
 
-        public string GenerateCode(IList<Table> schema, OdbcOptions odbcOptions)
+        public string GenerateCode(IList<Table> querySchema, SqlCommands nonQueryCommands, OdbcOptions odbcOptions)
         {
             using (var source = new SourceWriter())
             {
@@ -51,13 +51,21 @@ namespace Weikio.ApiFramework.Plugins.Odbc.CodeGeneration
                 source.UsingNamespace("Weikio.ApiFramework.Plugins.Odbc.Schema");
                 source.WriteLine("");
 
-                foreach (var table in schema)
+                foreach (var table in querySchema)
                 {
                     source.WriteNamespaceBlock(table, namespaceBlock =>
                     {
                         namespaceBlock.WriteDataTypeClass(table);
 
-                        namespaceBlock.WriteApiClass(table, odbcOptions);
+                        namespaceBlock.WriteQueryApiClass(table, odbcOptions);
+                    });
+                }
+
+                foreach (var command in nonQueryCommands)
+                {
+                    source.WriteNamespaceBlock(command, namespaceBlock =>
+                    {
+                        namespaceBlock.WriteNonQueryCommandApiClass(command, odbcOptions);
                     });
                 }
 

@@ -20,6 +20,16 @@ namespace Weikio.ApiFramework.Plugins.Odbc.CodeGeneration
             writer.FinishBlock(); // Finish the namespace
         }
 
+        public static void WriteNamespaceBlock(this ISourceWriter writer, KeyValuePair<string, SqlCommand> command,
+            Action<ISourceWriter> contentProvider)
+        {
+            writer.Namespace(typeof(ApiFactory).Namespace + ".Generated" + command.Key);
+
+            contentProvider.Invoke(writer);
+
+            writer.FinishBlock(); // Finish the namespace
+        }
+
         public static void WriteDataTypeClass(this ISourceWriter writer, Table table)
         {
             writer.StartClass($"{GetDataTypeName(table)}");
@@ -39,7 +49,7 @@ namespace Weikio.ApiFramework.Plugins.Odbc.CodeGeneration
             writer.FinishBlock(); // Finish the class
         }
 
-        public static void WriteApiClass(this ISourceWriter writer, Table table, OdbcOptions odbcOptions)
+        public static void WriteQueryApiClass(this ISourceWriter writer, Table table, OdbcOptions odbcOptions)
         {
             writer.StartClass(GetApiClassName(table));
 
@@ -65,7 +75,7 @@ namespace Weikio.ApiFramework.Plugins.Odbc.CodeGeneration
 
             if (table.SqlCommand != null)
             {
-                writer.WriteSqlCommandMethod(table, odbcOptions);
+                writer.WriteCommandMethod(table.Name, table.SqlCommand, odbcOptions);
             }
             else
             {
@@ -75,11 +85,19 @@ namespace Weikio.ApiFramework.Plugins.Odbc.CodeGeneration
             writer.FinishBlock(); // Finish the class
         }
 
-        private static void WriteSqlCommandMethod(this ISourceWriter writer, Table table, OdbcOptions odbcOptions)
+        public static void WriteNonQueryCommandApiClass(this ISourceWriter writer, KeyValuePair<string, SqlCommand> command, OdbcOptions odbcOptions)
         {
-            var tableName = table.Name;
-            var sqlCommand = table.SqlCommand;
+            writer.StartClass(GetApiClassName(command));
 
+            writer.WriteLine("public OdbcOptions OdbcOptions { get; set; }");
+
+            writer.WriteCommandMethod(command.Key, command.Value, odbcOptions);
+
+            writer.FinishBlock(); // Finish the class
+        }
+
+        private static void WriteCommandMethod(this ISourceWriter writer, string commandName, SqlCommand sqlCommand, OdbcOptions odbcOptions)
+        {
             var sqlMethod = sqlCommand.CommandText.Trim()
                 .Split(new[] { ' ' }, 2)
                 .First().ToLower();
@@ -115,10 +133,20 @@ namespace Weikio.ApiFramework.Plugins.Odbc.CodeGeneration
                 }
             }
 
-            var dataTypeName = GetDataTypeName(table);
+            var dataTypeName = sqlCommand.IsNonQuery() ? "int" : GetDataTypeName(commandName, sqlCommand);
+            var returnType = sqlCommand.IsNonQuery() ? "int" : $"List<{dataTypeName}>";
 
-            writer.Write($"BLOCK:public List<{dataTypeName}> {sqlMethod}({string.Join(", ", methodParameters)})");
-            writer.WriteLine($"var result = new List<{dataTypeName}>();");
+            writer.Write($"BLOCK:public {returnType} {sqlMethod}({string.Join(", ", methodParameters)})");
+
+            if (sqlCommand.IsQuery())
+            {
+                writer.WriteLine($"var result = new List<{dataTypeName}>();");
+            }
+            else
+            { 
+                writer.WriteLine($"{returnType} result;");
+            }
+                        
             writer.WriteLine("");
 
             writer.UsingBlock($"var conn = new OdbcConnection(\"{odbcOptions.ConnectionString}\")", w =>
@@ -137,19 +165,26 @@ namespace Weikio.ApiFramework.Plugins.Odbc.CodeGeneration
                         }
                     }
 
-                    cmdBlock.UsingBlock("var reader = cmd.ExecuteReader()", readerBlock =>
+                    if (sqlCommand.IsQuery())
                     {
-                        readerBlock.Write("BLOCK:while (reader.Read())");
-                        readerBlock.WriteLine($"var item = new {dataTypeName}();");
-                        readerBlock.Write("BLOCK:foreach (var column in ColumnMap)");
+                        cmdBlock.UsingBlock("var reader = cmd.ExecuteReader()", readerBlock =>
+                        {
+                            readerBlock.Write("BLOCK:while (reader.Read())");
+                            readerBlock.WriteLine($"var item = new {dataTypeName}();");
+                            readerBlock.Write("BLOCK:foreach (var column in ColumnMap)");
 
-                        readerBlock.Write(
-                            "item[column.Value] = reader[column.Key] == DBNull.Value ? null : reader[column.Key];");
-                        readerBlock.FinishBlock(); // Finish the column setting foreach loop
+                            readerBlock.Write(
+                                "item[column.Value] = reader[column.Key] == DBNull.Value ? null : reader[column.Key];");
+                            readerBlock.FinishBlock(); // Finish the column setting foreach loop
 
-                        readerBlock.Write("result.Add(item);");
-                        readerBlock.FinishBlock(); // Finish the while loop
-                    });
+                            readerBlock.Write("result.Add(item);");
+                            readerBlock.FinishBlock(); // Finish the while loop
+                        });
+                    }
+                    else
+                    {
+                        cmdBlock.WriteLine("result = cmd.ExecuteNonQuery();");
+                    }
                 });
             });
 
@@ -211,6 +246,11 @@ namespace Weikio.ApiFramework.Plugins.Odbc.CodeGeneration
             return $"{table.Name}Api";
         }
 
+        private static string GetApiClassName(KeyValuePair<string, SqlCommand> command)
+        {
+            return $"{command.Key}Api";
+        }
+
         private static string GetDataTypeName(Table table)
         {
             if (!string.IsNullOrEmpty(table.SqlCommand?.DataTypeName))
@@ -219,6 +259,16 @@ namespace Weikio.ApiFramework.Plugins.Odbc.CodeGeneration
             }
 
             return table.Name + "Item";
+        }
+
+        private static string GetDataTypeName(string commandName, SqlCommand sqlCommand = null)
+        {
+            if (!string.IsNullOrEmpty(sqlCommand?.DataTypeName))
+            {
+                return sqlCommand.DataTypeName;
+            }
+
+            return commandName + "Item";
         }
 
         private static string GetPropertyName(string originalName)

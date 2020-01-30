@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -12,7 +12,8 @@ namespace Weikio.ApiFramework.Plugins.Odbc
     {
         public static Task<IEnumerable<Type>> Create(OdbcOptions odbcOptions, SqlCommands sqlCommands = null)
         {
-            var schema = new List<Table>();
+            var querySchema = new List<Table>();
+            var nonQueryCommands = new SqlCommands();
 
             using (var schemaReader = new SchemaReader(odbcOptions))
             {
@@ -20,19 +21,21 @@ namespace Weikio.ApiFramework.Plugins.Odbc
 
                 if (sqlCommands != null)
                 {
-                    var dbCommands = schemaReader.GetSchemaFor(sqlCommands);
-                    schema.AddRange(dbCommands);
+                    var commandsSchema = schemaReader.GetSchemaFor(sqlCommands);
+
+                    querySchema.AddRange(commandsSchema.QueryCommands);
+                    nonQueryCommands = commandsSchema.NonQueryCommands;
                 }
 
                 if (odbcOptions.ShouldGenerateApisForTables())
                 {
                     var dbTables = schemaReader.ReadSchemaFromDatabaseTables();
-                    schema.AddRange(dbTables);
+                    querySchema.AddRange(dbTables);
                 }
             }
 
             var generator = new CodeGenerator();
-            var assembly = generator.GenerateAssembly(schema, odbcOptions);
+            var assembly = generator.GenerateAssembly(querySchema, nonQueryCommands, odbcOptions);
 
             var result = assembly.GetExportedTypes()
                 .Where(x => x.Name.EndsWith("Api"))

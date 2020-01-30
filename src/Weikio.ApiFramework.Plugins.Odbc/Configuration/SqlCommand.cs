@@ -1,4 +1,5 @@
-﻿using System.IO;
+using System.IO;
+using System.Text.RegularExpressions;
 
 namespace Weikio.ApiFramework.Plugins.Odbc.Configuration
 {
@@ -28,6 +29,41 @@ namespace Weikio.ApiFramework.Plugins.Odbc.Configuration
         public string GetEscapedCommandText()
         {
             return CommandText.Replace("\"", "\"\"");
+        }
+
+        public bool IsQuery()
+        {
+            return Is("SELECT");
+        }
+
+        public bool IsNonQuery()
+        {
+            return !IsQuery();
+        }
+
+        public bool IsInsert()
+        {
+            return Is("INSERT");
+        }
+
+        public bool IsUpdate()
+        {
+            return Is("UPDATE");
+        }
+
+        public bool IsDelete()
+        {
+            return Is("DELETE");
+        }
+
+        private bool Is(string operation)
+        {
+            return Regex.IsMatch(CommandText, $@"^\s*{operation}\s", RegexOptions.IgnoreCase);
+        }
+
+        public bool HasWhereClause()
+        {
+            return Regex.IsMatch(CommandText, @"\sWHERE\s", RegexOptions.IgnoreCase);
         }
     }
 }
