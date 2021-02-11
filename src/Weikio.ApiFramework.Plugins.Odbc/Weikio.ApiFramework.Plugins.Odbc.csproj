@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFramework>netcoreapp3.1</TargetFramework>
@@ -9,7 +9,7 @@
     <Description>ODBC plugin for Api Framework.</Description>
     <PackageDescription>ODBC plugin for Api Framework.</PackageDescription>
     <PackageProjectUrl>https://www.weikio.com</PackageProjectUrl>
-    <Copyright>©2019 Weik.io</Copyright>
+    <Copyright>©2021 Weik.io</Copyright>
     <PackageId>Weikio.ApiFramework.Plugins.Odbc</PackageId>
     <Product>Weikio.ApiFramework.Plugins.Odbc</Product>
     <AssemblyName>Weikio.ApiFramework.Plugins.Odbc</AssemblyName>
@@ -24,11 +24,13 @@
   <ItemGroup>
     <PackageReference Include="LamarCompiler" Version="2.0.0" />
     <PackageReference Include="System.Data.Odbc" Version="4.5.0" />
-    <PackageReference Include="MinVer" Version="2.0.0"/>
+    <PackageReference Include="MinVer" Version="2.0.0" />
+    <PackageReference Include="Weikio.ApiFramework.SDK" Version="1.0.0-alpha.0.56" />
+    <PackageReference Include="Microsoft.Extensions.Logging" Version="3.1.10"/>
   </ItemGroup>
 
   <ItemGroup>
-    <None Include="../../docs/logo_256.png" Pack="true" Visible="false" PackagePath=""/>
+    <None Include="../../docs/logo_256.png" Pack="true" Visible="false" PackagePath="" />
   </ItemGroup>
   
 </Project>

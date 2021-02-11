@@ -53,6 +53,12 @@ namespace Weikio.ApiFramework.Plugins.Odbc.CodeGeneration
         {
             writer.StartClass(GetApiClassName(table));
 
+            writer.WriteLine($"private readonly ILogger<{GetApiClassName(table)}> _logger;");
+            writer.WriteLine($"public {GetApiClassName(table)} (ILogger<{GetApiClassName(table)}> logger)");
+            writer.WriteLine("{");
+            writer.WriteLine("_logger = logger;");
+            writer.WriteLine("}");
+
             var columnMap = new Dictionary<string, string>();
 
             foreach (var column in table.Columns)
@@ -71,7 +77,7 @@ namespace Weikio.ApiFramework.Plugins.Odbc.CodeGeneration
             writer.WriteLine("};");
             writer.WriteLine("");
 
-            writer.WriteLine("public OdbcOptions OdbcOptions { get; set; }");
+            writer.WriteLine("public OdbcOptions Configuration { get; set; }");
 
             if (table.SqlCommand != null)
             {
@@ -89,7 +95,7 @@ namespace Weikio.ApiFramework.Plugins.Odbc.CodeGeneration
         {
             writer.StartClass(GetApiClassName(command));
 
-            writer.WriteLine("public OdbcOptions OdbcOptions { get; set; }");
+            writer.WriteLine("public OdbcOptions Configuration { get; set; }");
 
             writer.WriteCommandMethod(command.Key, command.Value, odbcOptions);
 
@@ -134,24 +140,26 @@ namespace Weikio.ApiFramework.Plugins.Odbc.CodeGeneration
             }
 
             var dataTypeName = sqlCommand.IsNonQuery() ? "int" : GetDataTypeName(commandName, sqlCommand);
-            var returnType = sqlCommand.IsNonQuery() ? "int" : $"List<{dataTypeName}>";
+            var returnType = sqlCommand.IsNonQuery() ? "int" : $"IAsyncEnumerable<{dataTypeName}>";
 
-            writer.Write($"BLOCK:public {returnType} {sqlMethod}({string.Join(", ", methodParameters)})");
-
+            var cmdMethods = $"BLOCK:public async Task<{returnType}> {sqlMethod}({string.Join(", ", methodParameters)})";
             if (sqlCommand.IsQuery())
             {
-                writer.WriteLine($"var result = new List<{dataTypeName}>();");
+                cmdMethods = $"BLOCK:public async {returnType} {sqlMethod}({string.Join(", ", methodParameters)})";
             }
-            else
-            { 
+
+            writer.Write(cmdMethods);
+
+            if (sqlCommand.IsQuery() == false)
+            {
                 writer.WriteLine($"{returnType} result;");
             }
-                        
+
             writer.WriteLine("");
 
             writer.UsingBlock($"var conn = new OdbcConnection(\"{odbcOptions.ConnectionString}\")", w =>
             {
-                w.WriteLine("conn.Open();");
+                w.WriteLine("await conn.OpenAsync();");
 
                 w.UsingBlock("var cmd = conn.CreateCommand()", cmdBlock =>
                 {
@@ -167,9 +175,9 @@ namespace Weikio.ApiFramework.Plugins.Odbc.CodeGeneration
 
                     if (sqlCommand.IsQuery())
                     {
-                        cmdBlock.UsingBlock("var reader = cmd.ExecuteReader()", readerBlock =>
+                        cmdBlock.UsingBlock("var reader = await cmd.ExecuteReaderAsync()", readerBlock =>
                         {
-                            readerBlock.Write("BLOCK:while (reader.Read())");
+                            readerBlock.Write("BLOCK:while (await reader.ReadAsync())");
                             readerBlock.WriteLine($"var item = new {dataTypeName}();");
                             readerBlock.Write("BLOCK:foreach (var column in ColumnMap)");
 
@@ -177,7 +185,7 @@ namespace Weikio.ApiFramework.Plugins.Odbc.CodeGeneration
                                 "item[column.Value] = reader[column.Key] == DBNull.Value ? null : reader[column.Key];");
                             readerBlock.FinishBlock(); // Finish the column setting foreach loop
 
-                            readerBlock.Write("result.Add(item);");
+                            readerBlock.Write("yield return item;");
                             readerBlock.FinishBlock(); // Finish the while loop
                         });
                     }
@@ -188,7 +196,11 @@ namespace Weikio.ApiFramework.Plugins.Odbc.CodeGeneration
                 });
             });
 
-            writer.Write("return result;");
+            if (sqlCommand.IsQuery() == false)
+            {
+                writer.Write("return result;");
+            }
+
             writer.FinishBlock(); // Finish the method
         }
 
@@ -197,14 +209,14 @@ namespace Weikio.ApiFramework.Plugins.Odbc.CodeGeneration
         {
             var dataTypeName = GetDataTypeName(table);
 
-            writer.Write($"BLOCK:public List<{dataTypeName}> Select(int? top)");
+            writer.Write($"BLOCK:public async IAsyncEnumerable<{dataTypeName}> Select(int? top)");
             writer.WriteLine($"var result = new List<{dataTypeName}>();");
             writer.WriteLine("var fields = new List<string>();");
             writer.WriteLine("");
 
-            writer.UsingBlock($"var conn = new OdbcConnection(OdbcOptions.ConnectionString)", w =>
+            writer.UsingBlock($"var conn = new OdbcConnection(Configuration.ConnectionString)", w =>
             {
-                w.WriteLine("conn.Open();");
+                w.WriteLine("await conn.OpenAsync();");
 
                 w.UsingBlock("var cmd = conn.CreateCommand()", cmdBlock =>
                 {
@@ -215,7 +227,11 @@ namespace Weikio.ApiFramework.Plugins.Odbc.CodeGeneration
 
                     cmdBlock.WriteLine("cmd.CommandText = query;");
 
-                    cmdBlock.UsingBlock("var reader = cmd.ExecuteReader()", readerBlock =>
+                    cmdBlock.WriteLine("var sw = new System.Diagnostics.Stopwatch();");
+                    cmdBlock.WriteLine("var rowcount = 0;");
+                    cmdBlock.WriteLine("sw.Start();");
+
+                    cmdBlock.UsingBlock("var reader = await cmd.ExecuteReaderAsync()", readerBlock =>
                     {
                         readerBlock.Write("BLOCK:while (reader.Read())");
                         readerBlock.WriteLine($"var item = new {dataTypeName}();");
@@ -231,13 +247,17 @@ namespace Weikio.ApiFramework.Plugins.Odbc.CodeGeneration
                             "item[column.Value] = reader[column.Key] == DBNull.Value ? null : reader[column.Key];");
                         readerBlock.FinishBlock(); // Finish the column setting foreach loop
 
-                        readerBlock.Write("result.Add(item);");
+                        readerBlock.Write("yield return item;");
+                        readerBlock.Write("rowcount += 1;");
                         readerBlock.FinishBlock(); // Finish the while loop
                     });
+
+                    cmdBlock.WriteLine("sw.Stop();");
+                    cmdBlock.WriteLine("_logger.LogTrace(\"Query took {ElapsedTime} and {RowCount} rows were found.\", sw.Elapsed, rowcount);");
+
                 });
             });
 
-            writer.Write("return result;");
             writer.FinishBlock(); // Finish the method
         }
 

@@ -56,7 +56,7 @@ namespace Weikio.ApiFramework.Plugins.Odbc.Schema
                     {
                         throw new InvalidOperationException("");
                     }
-                    
+
                     nonQueryCommands.Add(sqlCommand.Key, sqlCommand.Value);
 
                     // don't read schema for INSERT and UPDATE commands
@@ -67,7 +67,7 @@ namespace Weikio.ApiFramework.Plugins.Odbc.Schema
                 {
                     odbcCommand.CommandText = sqlCommand.Value.CommandText;
                     odbcCommand.CommandTimeout = (int) TimeSpan.FromMinutes(5).TotalSeconds;
-                    
+
                     if (sqlCommand.Value.Parameters != null)
                     {
                         foreach (var parameter in sqlCommand.Value.Parameters)
@@ -76,7 +76,8 @@ namespace Weikio.ApiFramework.Plugins.Odbc.Schema
 
                             if (parameterType == null)
                             {
-                                throw new ArgumentException($"SQL command '{sqlCommand.Key}' has an invalid type '{parameter.Type}' defined for parameter '{parameter.Name}'.");
+                                throw new ArgumentException(
+                                    $"SQL command '{sqlCommand.Key}' has an invalid type '{parameter.Type}' defined for parameter '{parameter.Name}'.");
                             }
 
                             object parameterValue = null;
@@ -124,13 +125,13 @@ namespace Weikio.ApiFramework.Plugins.Odbc.Schema
 
                 if (schemaTable.Table.Columns.Contains("TABLE_QUALIFIER"))
                 {
-                    tableQualifier = schemaTable["TABLE_QUALIFIER"].ToString();    
+                    tableQualifier = schemaTable["TABLE_QUALIFIER"].ToString();
                 }
                 else if (schemaTable.Table.Columns.Contains("TABLE_SCHEM"))
                 {
                     tableQualifier = schemaTable["TABLE_SCHEM"].ToString();
                 }
-                
+
                 var tableName = schemaTable["TABLE_NAME"].ToString();
                 var tableNameWithQualifier = string.IsNullOrWhiteSpace(tableQualifier) ? tableName : $"{tableQualifier}.{tableName}";
 
@@ -143,7 +144,7 @@ namespace Weikio.ApiFramework.Plugins.Odbc.Schema
                 {
                     command.CommandText = $"select * from {tableNameWithQualifier}";
                     command.CommandTimeout = (int) TimeSpan.FromMinutes(5).TotalSeconds;
-                    
+
                     var columns = GetColumns(command);
                     schema.Add(new Table(tableName, tableQualifier, columns));
                 }

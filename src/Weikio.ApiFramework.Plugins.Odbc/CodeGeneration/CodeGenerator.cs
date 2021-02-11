@@ -5,6 +5,7 @@ using System.Data.Odbc;
 using System.Reflection;
 using LamarCodeGeneration;
 using LamarCompiler;
+using Microsoft.Extensions.Logging;
 using Weikio.ApiFramework.Plugins.Odbc.Configuration;
 using Weikio.ApiFramework.Plugins.Odbc.Schema;
 
@@ -19,6 +20,7 @@ namespace Weikio.ApiFramework.Plugins.Odbc.CodeGeneration
             generator.ReferenceAssembly(typeof(System.Data.DataRow).Assembly);
             generator.ReferenceAssembly(typeof(System.Data.Odbc.OdbcCommand).Assembly);
             generator.ReferenceAssembly(typeof(OdbcHelpers).Assembly);
+            generator.ReferenceAssembly(typeof(ILogger).Assembly);
 
             var assemblyCode = GenerateCode(querySchema, nonQueryCommands, odbcOptions);
 
@@ -49,6 +51,7 @@ namespace Weikio.ApiFramework.Plugins.Odbc.CodeGeneration
                 source.UsingNamespace("System.Diagnostics");
                 source.UsingNamespace("Weikio.ApiFramework.Plugins.Odbc.Configuration");
                 source.UsingNamespace("Weikio.ApiFramework.Plugins.Odbc.Schema");
+                source.UsingNamespace("Microsoft.Extensions.Logging");
                 source.WriteLine("");
 
                 foreach (var table in querySchema)
