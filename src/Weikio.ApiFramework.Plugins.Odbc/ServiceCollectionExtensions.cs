@@ -7,33 +7,18 @@ namespace Weikio.ApiFramework.Plugins.Odbc
 {
     public static class ServiceExtensions
     {
-        public static IApiFrameworkBuilder AddOdbc(this IApiFrameworkBuilder builder)
+        public static IApiFrameworkBuilder AddOdbc(this IApiFrameworkBuilder builder, string endpoint = null, OdbcOptions configuration = null)
         {
-            var assembly = typeof(OdbcOptions).Assembly;
-            var apiPlugin = new ApiPlugin { Assembly = assembly };
-
-            builder.Services.AddSingleton(typeof(ApiPlugin), apiPlugin);
-
-            builder.Services.Configure<ApiPluginOptions>(options =>
-            {
-                if (options.ApiPluginAssemblies.Contains(assembly))
-                {
-                    return;
-                }
-
-                options.ApiPluginAssemblies.Add(assembly);
-            });
+            builder.Services.AddOdbc(endpoint, configuration);
 
             return builder;
         }
 
-        public static IApiFrameworkBuilder AddOdbc(this IApiFrameworkBuilder builder, string endpoint, OdbcOptions configuration)
+        public static IServiceCollection AddOdbc(this IServiceCollection services, string endpoint = null, OdbcOptions configuration = null)
         {
-            builder.AddOdbc();
+            services.RegisterPlugin(endpoint, configuration);
 
-            builder.Services.RegisterEndpoint(endpoint, "Weikio.ApiFramework.Plugins.Odbc", configuration);
-
-            return builder;
+            return services;
         }
     }
 }

@@ -1,47 +1,119 @@
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Weikio.ApiFramework.Plugins.Odbc.CodeGeneration;
+using System.Security.Cryptography.Xml;
+using Microsoft.Extensions.Logging;
+using SqlKata.Compilers;
 using Weikio.ApiFramework.Plugins.Odbc.Configuration;
-using Weikio.ApiFramework.Plugins.Odbc.Schema;
+using Weikio.ApiFramework.SDK.DatabasePlugin;
 
 namespace Weikio.ApiFramework.Plugins.Odbc
 {
-    public static class ApiFactory
+    public class ApiFactory : DatabaseApiFactoryBase
     {
-        public static Task<IEnumerable<Type>> Create(OdbcOptions configuration)
+        public ApiFactory(ILogger<ApiFactory> logger, ILoggerFactory loggerFactory) : base(logger, loggerFactory)
         {
-            var querySchema = new List<Table>();
-            var nonQueryCommands = new SqlCommands();
+        }
 
-            using (var schemaReader = new SchemaReader(configuration))
+        public List<Type> Create(OdbcOptions configuration)
+        {
+            Compiler compiler = null;
+
+            if (string.Equals(configuration.Dialect, "mysql", StringComparison.InvariantCultureIgnoreCase))
             {
-                schemaReader.Connect();
-
-                if (configuration.SqlCommands?.Any() == true)
-                {
-                    var commandsSchema = schemaReader.GetSchemaFor(configuration.SqlCommands);
-
-                    querySchema.AddRange(commandsSchema.QueryCommands);
-                    nonQueryCommands = commandsSchema.NonQueryCommands;
-                }
-
-                if (configuration.ShouldGenerateApisForTables())
-                {
-                    var dbTables = schemaReader.ReadSchemaFromDatabaseTables(); 
-                    querySchema.AddRange(dbTables);
-                }
+                compiler = new MySqlCompiler();
             }
 
-            var generator = new CodeGenerator();
-            var assembly = generator.GenerateAssembly(querySchema, nonQueryCommands, configuration);
+            if (string.Equals(configuration.Dialect, "sqlsrv", StringComparison.InvariantCultureIgnoreCase))
+            {
+                compiler = new SqlServerCompiler() { UseLegacyPagination = true };
+            }
 
-            var result = assembly.GetExportedTypes()
-                .Where(x => x.Name.EndsWith("Api"))
-                .ToList();
+            if (string.Equals(configuration.Dialect, "pervasive", StringComparison.InvariantCultureIgnoreCase))
+            {
+                compiler = new PervasiveCompiler() { UseLegacyPagination = true };
+            }
+            
+            if (string.Equals(configuration.Dialect, "sqlite", StringComparison.InvariantCultureIgnoreCase))
+            {
+                compiler = new SqliteCompiler();
+            }
 
-            return Task.FromResult<IEnumerable<Type>>(result);
+            if (string.Equals(configuration.Dialect, "oracle", StringComparison.InvariantCultureIgnoreCase))
+            {
+                compiler = new OracleCompiler();
+            }
+
+            if (string.Equals(configuration.Dialect, "postgres", StringComparison.InvariantCultureIgnoreCase))
+            {
+                compiler = new PostgresCompiler();
+            }
+
+            if (string.Equals(configuration.Dialect, "firebird", StringComparison.InvariantCultureIgnoreCase))
+            {
+                compiler = new FirebirdCompiler();
+            }
+
+            if (compiler == null)
+            {
+                throw new Exception("Unknown dialect. Supported are: mysql, firebird, postgres, oracle, sqlite, sqlsrv, pervasive");
+            }
+
+            var tableColumnSelectQuery = GetTableColumnSelectQuery(configuration);
+            
+            var pluginSettings = new DatabasePluginSettings(config => new OdbcConnectionCreator(config),
+                tableName => string.Format(tableColumnSelectQuery, tableName), compiler);
+
+            pluginSettings.AdditionalReferences.Add(typeof(SqlKata.Column).Assembly);
+            pluginSettings.AdditionalReferences.Add(typeof(Table).Assembly);
+
+            var result = Generate(configuration, pluginSettings);
+
+            return result;
+        }
+
+        protected string GetTableColumnSelectQuery(OdbcOptions configuration)
+        {
+            if (!string.IsNullOrWhiteSpace(configuration.TableColumnSelectQueryOverride))
+            {
+                return configuration.TableColumnSelectQueryOverride;
+            }
+            
+            if (string.Equals(configuration.Dialect, "mysql", StringComparison.InvariantCultureIgnoreCase))
+            {
+                return "select * from {0} limit 1";
+            }
+
+            if (string.Equals(configuration.Dialect, "sqlsrv", StringComparison.InvariantCultureIgnoreCase))
+            {
+                return "select top 0 * from {0}";
+            }
+            
+            if (string.Equals(configuration.Dialect, "pervasive", StringComparison.InvariantCultureIgnoreCase))
+            {
+                return "select top 0 * from {0}";
+            }
+
+            if (string.Equals(configuration.Dialect, "sqlite", StringComparison.InvariantCultureIgnoreCase))
+            {
+                return "select * from {0} limit 1";
+            }
+
+            if (string.Equals(configuration.Dialect, "oracle", StringComparison.InvariantCultureIgnoreCase))
+            {
+                return "select * from {0} FETCH NEXT 11 ROWS ONLY;";
+            }
+
+            if (string.Equals(configuration.Dialect, "postgres", StringComparison.InvariantCultureIgnoreCase))
+            {
+                return "select * from {0} limit 1";
+            }
+
+            if (string.Equals(configuration.Dialect, "firebird", StringComparison.InvariantCultureIgnoreCase))
+            {
+                return "select first 1 * from {0}";
+            }
+
+            throw new Exception("Unknown dialect");
         }
     }
 }

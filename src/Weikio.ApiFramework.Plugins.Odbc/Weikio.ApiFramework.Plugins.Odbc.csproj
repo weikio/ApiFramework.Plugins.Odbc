@@ -8,7 +8,7 @@
     <Company>Weik.io</Company>
     <Description>ODBC plugin for Api Framework.</Description>
     <PackageDescription>ODBC plugin for Api Framework.</PackageDescription>
-    <PackageProjectUrl>https://www.weikio.com</PackageProjectUrl>
+    <PackageProjectUrl>https://weik.io</PackageProjectUrl>
     <Copyright>©2021 Weik.io</Copyright>
     <PackageId>Weikio.ApiFramework.Plugins.Odbc</PackageId>
     <Product>Weikio.ApiFramework.Plugins.Odbc</Product>
@@ -22,11 +22,9 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="LamarCompiler" Version="2.0.0" />
+    <PackageReference Include="MinVer" Version="2.0.0" PrivateAssets="all" />
     <PackageReference Include="System.Data.Odbc" Version="4.5.0" />
-    <PackageReference Include="MinVer" Version="2.0.0" />
-    <PackageReference Include="Weikio.ApiFramework.SDK" Version="1.0.0-alpha.0.56" />
-    <PackageReference Include="Microsoft.Extensions.Logging" Version="3.1.10"/>
+    <PackageReference Include="Weikio.ApiFramework.SDK.DatabasePlugin" Version="1.0.0-alpha.0.4" />
   </ItemGroup>
 
   <ItemGroup>

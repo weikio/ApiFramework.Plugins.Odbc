@@ -3,7 +3,7 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using Weikio.ApiFramework.AspNetCore;
+using Weikio.ApiFramework.AspNetCore.StarterKit;
 using Weikio.ApiFramework.Plugins.Odbc.Configuration;
 
 namespace Weikio.ApiFramework.Plugins.Odbc.Sample
@@ -22,10 +22,11 @@ namespace Weikio.ApiFramework.Plugins.Odbc.Sample
         {
             services.AddControllers();
 
-            services.AddApiFramework()
+            services.AddApiFrameworkStarterKit()
                 .AddOdbc("/db", new OdbcOptions()
                 {
                     ConnectionString = "dsn=l732",
+                    Tables = new []{"EDOCS", "FIRMA", "FLUOTTO"}
                 });
 
             services.AddOpenApiDocument();
@@ -42,9 +43,6 @@ namespace Weikio.ApiFramework.Plugins.Odbc.Sample
             app.UseHttpsRedirection();
             app.UseRouting();
             app.UseAuthorization();
-
-            app.UseOpenApi();
-            app.UseSwaggerUi3();
 
             app.UseEndpoints(endpoints =>
             {
