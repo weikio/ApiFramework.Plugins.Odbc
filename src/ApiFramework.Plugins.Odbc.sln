@@ -1,0 +1,27 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Weikio.ApiFramework.Plugins.Odbc", "Weikio.ApiFramework.Plugins.Odbc\Weikio.ApiFramework.Plugins.Odbc.csproj", "{A4958927-3728-4FB5-98A5-BAE8AE5714D7}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Weikio.ApiFramework.Plugins.Odbc.Sample", "..\samples\ApiFramework.Plugins.Odbc.Sample\Weikio.ApiFramework.Plugins.Odbc.Sample.csproj", "{4FA720B5-FEE3-48CE-BECB-52354EABC16F}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Samples", "Samples", "{2B641937-1592-4445-B033-0323067949C1}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{A4958927-3728-4FB5-98A5-BAE8AE5714D7}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A4958927-3728-4FB5-98A5-BAE8AE5714D7}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A4958927-3728-4FB5-98A5-BAE8AE5714D7}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A4958927-3728-4FB5-98A5-BAE8AE5714D7}.Release|Any CPU.Build.0 = Release|Any CPU
+		{4FA720B5-FEE3-48CE-BECB-52354EABC16F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{4FA720B5-FEE3-48CE-BECB-52354EABC16F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{4FA720B5-FEE3-48CE-BECB-52354EABC16F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{4FA720B5-FEE3-48CE-BECB-52354EABC16F}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{4FA720B5-FEE3-48CE-BECB-52354EABC16F} = {2B641937-1592-4445-B033-0323067949C1}
+	EndGlobalSection
+EndGlobal
